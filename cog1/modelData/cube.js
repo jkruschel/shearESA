@@ -71,7 +71,7 @@ define(["exports", "data"], function(exports, data) {
 			[3,0,4,7]
 		];	
 
-		instance.polygonColors = [1,2,3,4,5,6];
+		instance.polygonColors = [0,1,2,3,4,5];
 		
 		//instance.vertexNormals = [];
 		//instance.polygonNormals = [];
