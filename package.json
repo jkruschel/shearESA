@@ -4,7 +4,7 @@
   "description": "Computergrafik 1",
   "main": "index.html",
   "scripts": {
-    "deploy": "gh-pages -d . -b master --repo https://github.com/jkruschel/myModel"
+    "deploy": "gh-pages -d . -b master --repo https://github.com/jkruschel/bresenham"
   },
   "author": "Jascha Kruschel",
   "license": "ISC",

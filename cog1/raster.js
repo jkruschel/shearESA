@@ -148,15 +148,17 @@ function(exports, shader, framebuffer, data) {
 			// x is driving variable.
 			e = dXAbs - dYAbs2;
 			framebuffer.set(x, y, getZ(x, y), color);
-			for(x;x < endX;x++){
+			while(x!==endX){
 				if(e>0){
 					e = e - dYAbs2;
 					framebuffer.set(x, y, getZ(x, y), color);
+					x++;
 				}
 				else{
 					y = y + dYSign;
 					e = e + dXdYdiff2;
 					framebuffer.set(x, y, getZ(x, y), color);
+					x++;
 				}
 			}
 		}
@@ -164,15 +166,17 @@ function(exports, shader, framebuffer, data) {
 			// y is driving variable.
 			e = dYAbs - dXAbs2;
 			framebuffer.set(x, y, getZ(x, y), color);
-			for(y;y < endY;y++){
+			while(y!==endY){
 				if(e>0){
 					e = e - dXAbs2;
 					framebuffer.set(x, y, getZ(x, y), color);
+					y++;
 				}
 				else{
 					x = x + dXSign;
 					e = e + dYdXdiff2;
 					framebuffer.set(x, y, getZ(x, y), color);
+					y++;
 				}
 			}
 		}
