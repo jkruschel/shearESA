@@ -133,7 +133,7 @@ function(exports, shader, framebuffer, data) {
 		//return;
 
 		// Skip it, if the line is just a point.
-		if(startX==endX&&startY==endY){
+		if(startX==endX && startY==endY){
 			return;
 		}
 
@@ -146,8 +146,8 @@ function(exports, shader, framebuffer, data) {
 		// Distinction of cases for driving variable.
 		if(dXAbs >= dYAbs){
 			// x is driving variable.
-			e = dXAbs - dYAbs2;
 			framebuffer.set(x, y, getZ(x, y), color);
+			e = dXAbs - dYAbs2;
 			for(x;x < endX;x++){
 				if(e>0){
 					e = e - dYAbs2;
@@ -162,17 +162,19 @@ function(exports, shader, framebuffer, data) {
 		}
 		else{
 			// y is driving variable.
-			e = dYAbs - dXAbs2;
 			framebuffer.set(x, y, getZ(x, y), color);
-			for(y;y < endY;y++){
+			e = dYAbs - dXAbs2;
+			while(y !== endY){
 				if(e>0){
 					e = e - dXAbs2;
 					framebuffer.set(x, y, getZ(x, y), color);
+					y = y + dYSign;
 				}
 				else{
 					x = x + dXSign;
 					e = e + dYdXdiff2;
 					framebuffer.set(x, y, getZ(x, y), color);
+					y = y + dYSign;
 				}
 			}
 		}
