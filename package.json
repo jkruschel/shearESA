@@ -9,6 +9,7 @@
   "author": "Jascha Kruschel",
   "license": "ISC",
   "devDependencies": {
-    "gh-pages": "^3.2.3"
+    "gh-pages": "^3.2.3",
+    "html-validate": "^2.6.0"
   }
 }
