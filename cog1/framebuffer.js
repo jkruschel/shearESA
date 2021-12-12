@@ -131,21 +131,22 @@ define(["exports", "scene"], function(exports, scene) {
 
 		// Z-Buffer pixel starts a frame as undefined.
 		// The first access on a pixel does not need a test.
-
-			// On z-buffer fights color black should win to emphasize debug edges.
-			// Use some small epsilon to determine z-buffer fights
-			// in favor of the the polygon processed first or last (depending on sign).
-			// Epsilon depends on the z-range of the scene.
-
-				// Guess some decent epsilon (which may be >1 despite the name).
-
-			// The camera is in the origin looking in negative z-direction.
-
-
-		// END exercise Z-Buffer
-
-
-		return true;
+		if (zBuf[indexZBuf] == undefined) {
+			zBuf[indexZBuf] = z;
+			return true;
+		  }
+		  // On z-buffer fights color black should win to emphasize debug edges.
+		  // Use some small epsilon to determine z-buffer fights
+		  // in favor of the the polygon processed first or last (depending on sign).
+		  // Epsilon depends on the z-range of the scene.
+		  if (zBuf[indexZBuf] < z + 10) {
+			//console.log(z);
+			// console.log("dz: " + Math.abs(zBuf[indexZBuf]) - Math.abs(z));
+			zBuf[indexZBuf] = z;
+			return true;
+		  }
+		  //console.log("Skipping because  zBuff contains greater value");
+		  return false;
 	}
 
 	/**
@@ -170,7 +171,7 @@ define(["exports", "scene"], function(exports, scene) {
 
 		if(doZBufferTest == undefined || doZBufferTest == true) {
 			// Perform zBuffer-test (default).
-			if(! zBufferTest(x, y, z, color)) {
+			if(!zBufferTest(x, y, z, color)) {
 				return;
 			}
 		}

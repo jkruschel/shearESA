@@ -116,6 +116,12 @@ function(exports, shader, framebuffer, data) {
 		var y = startY;
 		var z = startZ;
 
+		// if(endZ>startZ){
+		// 	let temp = startZ;
+		// 	endZ = startZ;
+		// 	startZ = temp;
+		// }
+
 		// z is linearly interpolated with delta dz in each step of the driving variable.
 		var dz;
 
@@ -146,44 +152,48 @@ function(exports, shader, framebuffer, data) {
 		// Distinction of cases for driving variable.
 		if(dXAbs >= dYAbs){
 			// x is driving variable.
+			dz = (endZ - startZ) / Math.abs(dX);
 			var lasty = y - dYSign;
-			framebuffer.set(x, y, getZ(x, y), color);
+			framebuffer.set(x, y, z, color);
 			e = dXAbs - dYAbs2;
 			for(x;x < endX;x++){
 				if(e>0){
 					e = e - dYAbs2;
-					framebuffer.set(x, y, getZ(x, y), color);
+					framebuffer.set(x, y, z, color);
 				}
 				else{
 					y = y + dYSign;
 					e = e + dXdYdiff2;
-					framebuffer.set(x, y, getZ(x, y), color);
+					framebuffer.set(x, y, z, color);
 				}
 				if(startY != endY && x != endX && y != lasty && y != startY && y != endY) {
-					addIntersection(x, y, getZ(x, y), interpolationWeight, edgeStartVertexIndex, edgeEndVertexIndex, edgeStartTextureCoord, edgeEndTextureCoord);
+					addIntersection(x, y, z, interpolationWeight, edgeStartVertexIndex, edgeEndVertexIndex, edgeStartTextureCoord, edgeEndTextureCoord);
 				}
 				lasty = y;
+				z += dz;
 			}
 		}
 		else{
 			// y is driving variable.
-			framebuffer.set(x, y, getZ(x, y), color);
+			dz = (endZ - startZ) / Math.abs(dY);
+			framebuffer.set(x, y, z, color);
 			e = dYAbs - dXAbs2;
 			while(y !== endY){
 				if(e>0){
 					e = e - dXAbs2;
-					framebuffer.set(x, y, getZ(x, y), color);
+					framebuffer.set(x, y, z, color);
 					y = y + dYSign;
 				}
 				else{
 					x = x + dXSign;
 					e = e + dYdXdiff2;
-					framebuffer.set(x, y, getZ(x, y), color);
+					framebuffer.set(x, y, z, color);
 					y = y + dYSign;
 				}
 				if(y!=endY) {
-					addIntersection(x, y, getZ(x, y), interpolationWeight, edgeStartVertexIndex, edgeEndVertexIndex, edgeStartTextureCoord, edgeEndTextureCoord);
+					addIntersection(x, y, z, interpolationWeight, edgeStartVertexIndex, edgeEndVertexIndex, edgeStartTextureCoord, edgeEndTextureCoord);
 				}
+				z += dz;
 			}
 		}
 		// END exercise Bresenham		
@@ -198,14 +208,14 @@ function(exports, shader, framebuffer, data) {
 	 *
 	 */
 	function scanlineStrokePolygon(vertices, polygon, color) {
-
+		clearIntersections();
 		// Loop over vertices/edges in polygon.
 		for(var v = 0; v < polygon.length; v++) {
 
 			// Determine start st and end point end of edge.
 			var st = vertices[polygon[v]];
 			// Connect edge to next or to first vertex to close the polygon.
-			var nextVertexIndex = (v < polygon.length - 1) ? v + 1 : 0;
+			var nextVertexIndex = v < polygon.length - 1 ? v + 1 : 0;
 			var end = vertices[polygon[nextVertexIndex]];
 
 			drawLineBresenhamGivenStartEndPoint(st, end, color);
@@ -230,10 +240,10 @@ function(exports, shader, framebuffer, data) {
 		// to determine z-values of intermediate points.
 		// Maybe skip polygons that are perpendicular to the screen / xy-plane.
 		// The plane calculation can be commented out if bi-linear interpolation is applied.
-		if(! calcPlaneEquation(vertices, polygon)) {
+		//if(! calcPlaneEquation(vertices, polygon)) {
 			//console.log("Skip plane(polygon) is perpendicular to the screen / xy-plane, color: " + color.name);
-			return;
-		}
+			//return;
+		//}
 
 		// Sign ()+-1) of derivative of edge.
 		var derivative = undefined;
@@ -244,9 +254,9 @@ function(exports, shader, framebuffer, data) {
 
 		// For the start edge we need the last edge with derivative !=0,
 		// Pre-calculate the derivatives for last edge !=0 of polygon.
-		for(var v = polygon.length; v > 0; v--){
+		for(let v = polygon.length; v > 0; v--){
 			if(calcDerivative(vertices[polygon[v]], vertices[polygon[v-1]]) !== 0){
-				lastDerivative = calcDerivative(vertices[polygon[v]]);
+				lastDerivative = calcDerivative(vertices[polygon[v]], vertices[polygon[v-1]]);
 				break;
 			}
 
@@ -259,14 +269,14 @@ function(exports, shader, framebuffer, data) {
 
 		// First raster only the edges and, if requested, store intersections for filling.
 		// Loop over vertices/edges in polygon.
-		for(var v = 0; v < polygon.length; v++) {
+		for(let v = 0; v < polygon.length; v++) {
 
 			// Determine start and end point of edge.
 			var st = vertices[polygon[v]];
 
 
 			// Connect edge to next or to first vertex to close the polygon.
-			var nextVertexIndex = (v < polygon.length - 1) ? v + 1 : 0;
+			var nextVertexIndex = v < polygon.length - 1 ? v + 1 : 0;
 			var end = vertices[polygon[nextVertexIndex]];
 
 
@@ -281,7 +291,7 @@ function(exports, shader, framebuffer, data) {
 
 			nextX = Math.floor(end[0]);
 			nextY = Math.floor(end[1]);
-			nextZ = end[0];
+			nextZ = end[2];
 
 			var edgeStartVertexIndex = st;
 			var edgeEndVertexIndex = end;
@@ -293,13 +303,15 @@ function(exports, shader, framebuffer, data) {
 			drawLineBresenham(currX, currY, currZ, nextX, nextY, nextZ, color, true, edgeStartVertexIndex, edgeEndVertexIndex);
 
 			// Calculate current and save last derivative.
+			lastDerivative = derivative;
 			derivative = calcDerivative(currY, nextY);
-			console.log("derivative:" + derivative + " lastDerivative " + lastDerivative);
+			//console.log("derivative:" + derivative + " lastDerivative " + lastDerivative);
 
 
 
 			// Skip horizontal edges.
 			if(derivative == 0){
+				derivative = lastDerivative;
 				continue;
 			}
 
@@ -307,8 +319,6 @@ function(exports, shader, framebuffer, data) {
 			// Add end point of non horizontal edges.
 			if(derivative != 0){
 				addIntersection(nextX, nextY, nextZ);
-				console.log(`Adding end point to intersection: ${nextX}, ${nextY}, ${nextZ}`);
-				// console.log(`${scanlineIntersection[nextY].length}th intersection (end point) at line ${nextY}`);
 			}
 			//console.log("Add end point:" + nextX + ", " + nextY);
 
@@ -316,7 +326,7 @@ function(exports, shader, framebuffer, data) {
 			if(derivative + lastDerivative == 0 && derivative != 0) {
 				// Add start point if edges are non monotonous, Peek point.
 				addIntersection(currX, currY, currZ);
-				console.log(`Adding start point to intersection: ${currX}, ${currY}, ${currZ}`);
+				//console.log(`Adding start point to intersection: ${currX}, ${currY}, ${currZ}`);
 				// console.log(`${scanlineIntersection[currY].length}th intersection (start point) at line ${currY}`);
 			}
 
@@ -354,6 +364,8 @@ function(exports, shader, framebuffer, data) {
 		// BEGIN exercise Z-Buffer (for interpolation of z)
 
 		// Calculate dz for linear interpolation along a scanline.
+
+		interpolationData.dz = (zEndFill - zStartFill) / Math.abs(deltaX);
 
 		// END exercise Z-Buffer
 
@@ -419,6 +431,7 @@ function(exports, shader, framebuffer, data) {
 		// BEGIN exercise Z-Buffer (for interpolation of z or plane equ)
 
 		// Calculate z for next pixel, i.e. apply dz step.
+		interpolationData.z += interpolationData.dz;
 
 		// END exercise Z-Buffer
 
@@ -512,10 +525,15 @@ function(exports, shader, framebuffer, data) {
 					xfinish = xtemp;
 				}
 
+				interpolationPrepareScanline(xbegin,xfinish,texture);
 
 				// Fill line section inside polygon, loop x.
 				for(var x = xbegin.x; x < xfinish.x;x++){
-					framebuffer.set(x, y, 0, color);
+					horizontalClippingTest = (x >= 0) && (x < width);
+					if(horizontalClippingTest){
+					interpolationStepOnScanline(texture);
+					framebuffer.set(x, y, interpolationData.z, color);
+					}
 				}
 				pair++;
 
