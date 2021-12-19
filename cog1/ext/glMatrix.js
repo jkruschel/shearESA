@@ -1832,3 +1832,17 @@ quat4.str = function(quat) {
 	return '[' + quat[0] + ', ' + quat[1] + ', ' + quat[2] + ', ' + quat[3] + ']'; 
 };
 
+mat4.shear = function (shear, vec) {
+	var x = vec[0];
+	var y = vec[1];
+	var z = vec[2];
+
+	shear[1] = x;
+	shear[2] = x;
+	shear[4] = y;
+	shear[6] = y;
+	shear[8] = z;
+	shear[9] = z;
+
+	return shear;
+}

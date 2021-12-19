@@ -262,6 +262,8 @@ define(["exports", "shader"], function(exports, shader) {
 			// BEGIN exercise Shear
 			// Include shearing.
 			// Modify the matrix this.localShear (see mat4.translate for matrix data structure).
+			mat4.shear(this.localShear, this.transformation.shear);
+			mat4.multiply(this.localModelview, this.localShear);
 
 			// END exercise Shear
 
@@ -345,6 +347,7 @@ define(["exports", "shader"], function(exports, shader) {
 	 */
 	function shear(vec, setTo) {
 		// BEGIN exercise Shear
+		this.transform(this.transformation.shear, vec, setTo);
 
 		// END exercise Shear
 	}
